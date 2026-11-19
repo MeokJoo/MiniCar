@@ -20,6 +20,11 @@ button:disabled{opacity:.45}
 .card{background:var(--p);border:1px solid #3a2f85;border-radius:12px;padding:12px;margin-bottom:10px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #2b2370}
 .row:last-child{border:0}
+.tr{display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid #2b2370;font-size:14px}
+.tr:last-child{border:0}.tr b{font-weight:800}.tr span.s{font-size:13px}
+#fres{text-align:center;font-weight:800;font-size:18px;min-height:30px;margin:2px 0 8px}
+.ir{display:flex;gap:12px;padding:8px 2px;border-bottom:1px solid #2b2370;font-size:13px;line-height:1.55}
+.ir:last-child{border:0}.ir b{flex:0 0 38px}.ir span{color:var(--s)}
 .row button{padding:6px 10px;font-size:13px}
 #box{font-size:64px;text-align:center;min-height:84px}
 .shake{animation:sh .4s infinite}
@@ -31,7 +36,8 @@ button:disabled{opacity:.45}
 #ov>div{background:var(--p);border:1px solid var(--m);border-radius:14px;padding:16px;width:100%;max-width:440px}
 input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);background:#0b0820;color:#fff;font-size:16px;margin:10px 0}
 .nt{width:120px;margin-left:-5px;font-size:11px;font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lane{position:relative;height:96px;border-bottom:2px dashed #4b3fb0;margin:6px 0}
+#cv img{width:auto!important;height:170px!important;margin:0 auto}
+.lane{position:relative;height:106px;border-bottom:2px dashed #4b3fb0;margin:6px 0}
 .lane .c{position:absolute;left:0;width:110px;transform:translateX(0);transition:left 3s cubic-bezier(.4,0,.3,1)}
 .flash{animation:fl .8s}
 @keyframes fl{0%{box-shadow:inset 0 0 0 100vmax #ffd54acc}100%{box-shadow:inset 0 0 0 100vmax #ffd54a00}}
@@ -46,13 +52,21 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
 
 <section id="t-farm" class="card">
   <div id="box">📦</div>
+  <div id="fres"></div>
   <button class="big" id="farm">파밍하기</button>
-  <p class="s">일반 80% 200~20,000G / 희귀 17% 20,001~300,000G / 대박 3% 300,001~2,000,000G (쿨타임 1초)</p>
+  <div id="ftier" style="margin-top:12px"></div>
+  <p class="s" style="margin:6px 0 0">쿨타임 1초</p>
 </section>
 <section id="t-up" class="card" hidden>
   <button class="big" id="up">강화하기</button>
   <div id="ui" class="s" style="text-align:center;white-space:nowrap;font-size:12px;margin:10px 0 4px"></div>
-  <p class="s">4→5강부터 하락 확률이 있고(13~16강에서 하락하면 12강), 16→17강부터는 하락 대신 파괴 확률이 있고 단계가 오를수록 높아집니다. 최대 +30강입니다. 파괴되면 +0강(리어카)으로 돌아갑니다.</p>
+  <div id="uinfo" style="margin-top:6px">
+    <div class="ir"><b style="color:#4cd07a">성공</b><span>다음 단계로 올라갑니다.</span></div>
+    <div class="ir"><b style="color:#9aa6b6">유지</b><span>단계는 그대로이고 골드만 사라집니다.</span></div>
+    <div class="ir"><b style="color:#ffb454">하락</b><span>4→5강부터 생기며 한 단계 내려갑니다.<br>13~15강에서 하락하면 12강이 됩니다.</span></div>
+    <div class="ir"><b style="color:#ff5a6e">파괴</b><span>16→17강부터 생기며 +0강(리어카)으로 돌아갑니다.</span></div>
+    <div class="ir"><b>최대</b><span>+30강까지 강화할 수 있습니다.</span></div>
+  </div>
 </section>
 <section id="t-rank" class="card" hidden>
   <button class="big" id="rnd" style="margin-bottom:10px">🎲 랜덤 경주 시작</button><div id="lb"></div>
@@ -91,7 +105,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-13";
+const APP_VERSION="2026-11-19-17";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -103,7 +117,10 @@ function feed(m){DB.set("feed/"+Date.now()+rand(99),m)}
 
 // ---------- 차량 SVG (체급별 일반 차종, 0~20강) ----------
 let _cid=0;
-const CARNAME=["리어카","경차","준중형 세단","중형 세단","대형 세단","프리미엄 세단","프리미엄 쿠페 세단","플래그십 세단","대형 SUV","스포츠 쿠페","그랜드 투어러","로드스터","고성능 쿠페","스포츠 세단 튜닝","슈퍼카 I","슈퍼카 II","슈퍼카 III","레이싱 GT","하이퍼 스포츠","하이퍼카","챔피언 하이퍼카"];
+const CARNAME=["리어카","경차","소형 해치백","준중형 세단","중형 세단","패스트백 세단","SUV","미니밴","프리미엄 세단","프리미엄 SUV","대형 세단","프리미엄 패스트백","고급 세단","플래그십 세단","스포츠 SUV","오프로더 SUV","럭셔리 세단","슈퍼카 I","슈퍼카 II","하이퍼카","챔피언 하이퍼카"];
+// 사용자가 cars/N.png 사진을 넣은 단계에서는 아래 이름이 표시됩니다.
+const CARNAME_USER=["리어카","모닝","밍스퍼","휴반떼","K5","윤전소카","쏘렌토","카니발","밍슬라","제네시스 GV70","아우디A6","BMW 520D","벤츠 E클래스","아우디A8","포르쉐 카이엔","지바겐","벤츠 마이바흐s","아벤타도르","우라칸","부가티","코닉세그"];
+const carName=lv=>{const k=Math.min(lv|0,20);return IMGOK[k]===true?CARNAME_USER[k]:CARNAME[k]};
 function rp(P,R){const n=P.length;let d="";for(let i=0;i<n;i++){const p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n];const u=(a,b)=>{const x=a[0]-b[0],y=a[1]-b[1],l=Math.hypot(x,y)||1;return[x/l,y/l,l]};const v1=u(p0,p1),v2=u(p2,p1);const r=Math.min(R[i]||0,v1[2]/2,v2[2]/2);const a=[p1[0]+v1[0]*r,p1[1]+v1[1]*r],b=[p1[0]+v2[0]*r,p1[1]+v2[1]*r];d+=(i?"L":"M")+a[0].toFixed(1)+" "+a[1].toFixed(1)+"Q"+p1[0]+" "+p1[1]+" "+b[0].toFixed(1)+" "+b[1].toFixed(1)}return d+"Z"}
 const SH={
  hatch:{pts:[[66,118],[64,90],[70,70],[84,50],[170,50],[206,82],[234,90],[238,100],[236,118]],rad:[4,5,8,9,10,8,7,6,5],glass:[[76,80],[88,55],[166,55],[198,80]],wheels:[100,208],r:17,belt:80,doors:[132],pil:132,hl:[236,95],tl:[64,92],x0:64,x1:238,roof:50},
@@ -111,6 +128,8 @@ const SH={
  long:{pts:[[34,118],[32,90],[38,82],[80,78],[110,52],[176,50],[220,80],[258,88],[268,102],[266,118]],rad:[4,6,6,5,10,10,8,6,6,4],glass:[[82,77],[112,55],[174,53],[212,77]],wheels:[82,224],r:20,belt:78,doors:[128,168],pil:152,hl:[266,95],tl:[33,88],x0:32,x1:268,roof:50},
  fast:{pts:[[40,118],[38,92],[46,84],[70,80],[116,56],[172,54],[214,82],[254,90],[262,104],[260,118]],rad:[4,6,6,6,14,10,8,6,6,4],glass:[[76,79],[118,59],[170,57],[206,79]],wheels:[88,216],r:19,belt:80,doors:[150],pil:null,hl:[260,98],tl:[39,90],x0:38,x1:262,roof:54},
  suv:{pts:[[44,118],[42,86],[44,66],[52,46],[188,46],[226,80],[254,88],[260,102],[258,118]],rad:[4,6,8,8,10,8,6,6,4],glass:[[56,76],[60,51],[186,51],[216,76]],wheels:[90,216],r:22,belt:78,doors:[120,170],pil:146,hl:[258,95],tl:[43,86],x0:42,x1:260,roof:46},
+ van:{pts:[[34,118],[32,84],[34,62],[46,44],[196,44],[238,78],[258,88],[264,102],[262,118]],rad:[4,6,8,8,10,8,6,6,4],glass:[[44,76],[48,50],[194,50],[226,76]],wheels:[84,222],r:20,belt:78,doors:[96,146,190],pil:null,hl:[262,95],tl:[33,86],x0:32,x1:264,roof:46},
+ jeep:{pts:[[46,118],[44,84],[46,60],[56,44],[184,44],[198,78],[250,80],[258,94],[256,118]],rad:[4,5,6,6,8,6,5,5,4],glass:[[58,74],[62,50],[182,50],[194,74]],wheels:[92,214],r:24,belt:76,doors:[118,166],pil:140,hl:[258,92],tl:[45,84],x0:44,x1:258,roof:44},
  coupe:{pts:[[42,118],[40,94],[50,86],[84,80],[120,62],[172,60],[214,84],[254,92],[262,106],[260,118]],rad:[4,6,6,5,12,10,8,6,6,4],glass:[[88,79],[124,65],[168,63],[204,82]],wheels:[90,216],r:20,belt:82,doors:[154],pil:null,hl:[260,100],tl:[41,92],x0:40,x1:262,roof:60},
  road:{pts:[[42,118],[40,94],[52,86],[96,82],[170,80],[214,86],[254,92],[262,106],[260,118]],rad:[4,6,6,6,8,8,6,6,4],glass:null,wheels:[90,216],r:20,belt:82,doors:[154],pil:null,hl:[260,100],tl:[41,92],x0:40,x1:262,roof:70},
  wedge:{pts:[[38,118],[36,98],[46,90],[96,82],[132,60],[174,58],[224,84],[262,94],[268,106],[266,118]],rad:[4,6,8,8,12,10,8,6,6,4],glass:[[136,80],[138,63],[172,61],[212,81]],wheels:[88,218],r:20,belt:84,doors:[],pil:null,intake:[98,94,34,12],hl:[266,102],tl:[37,96],x0:36,x1:268,roof:58},
@@ -119,23 +138,23 @@ const SH={
 // sh: 형태, c: 도장색[밝음,어두움], s: 크기, wing: 리어윙 크기, st: 스트라이프색, rim: 휠색, gl: 언더글로우색
 const SPEC=[null,
  {sh:"hatch",c:["#f4f6f8","#aeb6bf"],s:1},
- {sh:"sedan",c:["#e6eaee","#98a1ab"],s:.97},
- {sh:"sedan",c:["#98a4b1","#4f5a66"],s:1.04},
- {sh:"long",c:["#59616b","#101317"],s:1},
+ {sh:"hatch",c:["#e8a29a","#a8453b"],s:1.05},
+ {sh:"sedan",c:["#e6eaee","#98a1ab"],s:.98},
+ {sh:"sedan",c:["#98a4b1","#4f5a66"],s:1.06},
+ {sh:"fast",c:["#6a7480","#262c34"],s:1},
+ {sh:"suv",c:["#c9d1d8","#6b7682"],s:1},
+ {sh:"van",c:["#f7f9fb","#a9b2bc"],s:1.04},
  {sh:"fast",c:["#5b90e0","#1a3c7c"],s:1},
+ {sh:"suv",c:["#2f3b52","#0e1522"],s:1.03},
+ {sh:"long",c:["#59616b","#101317"],s:1},
  {sh:"fast",c:["#b9c3cf","#4c5662"],s:1.05},
  {sh:"long",c:["#d5dbe2","#59626c"],s:1.05},
- {sh:"suv",c:["#f7f9fb","#a9b2bc"],s:1.02},
- {sh:"coupe",c:["#ff8062","#a3260f"],s:1},
- {sh:"coupe",c:["#49a07a","#12452f"],s:1.06},
- {sh:"road",c:["#f5d155","#a67c00"],s:1},
- {sh:"coupe",c:["#9a77e0","#3b1f7a"],s:1.03,wing:1},
- {sh:"fast",c:["#3a3b44","#0a0a0d"],s:1.04,wing:1,st:"#ff3b3b"},
- {sh:"wedge",c:["#ffab33","#a64d00"],s:1},
- {sh:"wedge",c:["#ffdc4d","#b58900"],s:1.02},
- {sh:"wedge",c:["#41dca8","#0b6e50"],s:1.04,wing:1},
- {sh:"hyper",c:["#eef2f7","#6a7f98"],s:1.02,wing:2,st:"#2b6cff"},
- {sh:"hyper",c:["#ee3b3b","#7a0b0b"],s:1.04,wing:2,st:"#ffffff"},
+ {sh:"long",c:["#3a3b44","#0a0a0d"],s:1.08,st:"#c9a24a"},
+ {sh:"suv",c:["#e9eef5","#7a8aa0"],s:1.06},
+ {sh:"jeep",c:["#4a5a40","#161c14"],s:1.05},
+ {sh:"long",c:["#1d1d22","#050507"],s:1.1,rim:["#ffe58a","#a8790a"]},
+ {sh:"wedge",c:["#ffdc4d","#b58900"],s:1.04,wing:1},
+ {sh:"wedge",c:["#41dca8","#0b6e50"],s:1.04,wing:1,st:"#ffffff"},
  {sh:"hyper",c:["#3b4049","#07080a"],s:1.05,wing:2,st:"#ffcf40",rim:["#ffe58a","#a8790a"],gl:"#ffcf40"},
  {sh:"hyper",c:["#ffdc5a","#b3000c"],s:1.08,wing:3,st:"#ffffff",rim:["#ffe58a","#a8790a"],gl:"#ff3b3b"}
 ];
@@ -157,7 +176,15 @@ function cartArt(id){
  for(let i=0;i<12;i++){const a=i*30*Math.PI/180;s+=`<line x1="${cx}" y1="${cy}" x2="${(cx+Math.cos(a)*r*.78).toFixed(1)}" y2="${(cy+Math.sin(a)*r*.78).toFixed(1)}" stroke="#aab1b8" stroke-width=".9"/>`}
  s+=`<circle cx="${cx}" cy="${cy}" r="4" fill="#555"/>`;
  return s+"</svg>"}
+// cars/0.png ~ cars/20.png 파일이 있으면 그 이미지를 쓰고, 없는 단계는 아래 SVG 그림을 씁니다.
+const IMGOK={};
+(function(){let left=21;for(let k=0;k<=20;k++){const im=new Image();const done=ok=>{IMGOK[k]=ok;if(!--left&&typeof me!=="undefined"&&me)render()};im.onload=()=>done(true);im.onerror=()=>done(false);im.src="cars/"+k+".png"}})();
 function car(lv){
+ lv=lv|0;const k=Math.min(lv,20);
+ if(IMGOK[k]===false)return carSvg(lv);
+ const gl=lv>=20?"filter:drop-shadow(0 0 "+Math.min(24,8+(lv-20)*2)+"px #ffd54a);":lv>=12?"filter:drop-shadow(0 0 8px #7a6bff);":"";
+ return `<img src="cars/${k}.png" alt="" draggable="false" style="width:100%;height:auto;display:block;border-radius:10px;${gl}" onload="IMGOK[${k}]=true" onerror="IMGOK[${k}]=false;this.outerHTML=carSvg(${lv})">`}
+function carSvg(lv){
  lv=lv|0;const id="c"+(++_cid),k=Math.min(lv,20);
  if(k==0)return cartArt(id);
  const S=SPEC[k],H=SH[S.sh],c0=S.c[0],c1=S.c[1],cx=(H.x0+H.x1)/2,ex=Math.max(0,lv-20);
@@ -166,7 +193,7 @@ function car(lv){
  o+=`<ellipse cx="${cx}" cy="134" rx="${(H.x1-H.x0)/2+10}" ry="5" fill="#000" opacity=".38"/>`;
  if(S.gl)o+=`<ellipse cx="${cx}" cy="133" rx="${(H.x1-H.x0)/2-6}" ry="3.5" fill="${S.gl}" opacity=".55"/>`;
  o+=`<g transform="translate(150 132) scale(${S.s}) translate(-150 -132)">`;
- if(lv>=14){const len=8+(Math.min(lv,20)-14)*3+ex*2,yy=H.pts[0][1]-9;o+=`<polygon points="${H.x0+2},${yy-4} ${H.x0-len},${yy} ${H.x0+2},${yy+4}" fill="#ff7a1a"><animate attributeName="points" dur=".18s" repeatCount="indefinite" values="${H.x0+2},${yy-4} ${H.x0-len},${yy} ${H.x0+2},${yy+4};${H.x0+2},${yy-4} ${H.x0-len*.7},${yy} ${H.x0+2},${yy+4}"/></polygon><polygon points="${H.x0+2},${yy-2} ${H.x0-len*.55},${yy} ${H.x0+2},${yy+2}" fill="${lv>=17?"#7fe3ff":"#ffe08a"}"/>`}
+ if(lv>=14&&(S.sh=="wedge"||S.sh=="hyper")){const len=8+(Math.min(lv,20)-14)*3+ex*2,yy=H.pts[0][1]-9;o+=`<polygon points="${H.x0+2},${yy-4} ${H.x0-len},${yy} ${H.x0+2},${yy+4}" fill="#ff7a1a"><animate attributeName="points" dur=".18s" repeatCount="indefinite" values="${H.x0+2},${yy-4} ${H.x0-len},${yy} ${H.x0+2},${yy+4};${H.x0+2},${yy-4} ${H.x0-len*.7},${yy} ${H.x0+2},${yy+4}"/></polygon><polygon points="${H.x0+2},${yy-2} ${H.x0-len*.55},${yy} ${H.x0+2},${yy+2}" fill="${lv>=17?"#7fe3ff":"#ffe08a"}"/>`}
  if(S.wing){const w=S.wing,wy=H.pts[3][1]-12-w*5,wx=H.x0-2,ww=34+w*8;o+=`<rect x="${wx+8}" y="${wy+4}" width="3.5" height="${H.pts[2][1]-wy-2}" fill="#2a2d33"/><rect x="${wx+ww-8}" y="${wy+4}" width="3.5" height="${H.pts[2][1]-wy-2}" fill="#2a2d33"/><rect x="${wx}" y="${wy}" width="${ww}" height="${4+w}" rx="2" fill="${c1}" stroke="#000" stroke-opacity=".5"/><rect x="${wx}" y="${wy}" width="${ww}" height="1.6" fill="#fff" opacity=".4"/>`}
  o+=`<path d="${rp(H.pts,H.rad)}" fill="url(#${id}b)" stroke="#000" stroke-opacity=".5" stroke-width="1.2"/>`;
  o+=`<rect x="${H.x0+8}" y="111" width="${H.x1-H.x0-16}" height="7" rx="2" fill="#000" opacity=".3"/>`;
@@ -188,31 +215,41 @@ function render(){
  if(!me)return;
  $("#nm").textContent=me.name;$("#gd").textContent=fmt(me.gold)+" G";
  $("#cv").innerHTML=car(me.lv);
- $("#lvt").textContent="+"+me.lv+" "+CARNAME[Math.min(me.lv,20)];
+ $("#lvt").textContent="+"+me.lv+" "+carName(me.lv);
  const n=me.lv+1,max=me.lv>=MAXLV;
- $("#ui").textContent=max?"":`성공 ${sr(n)}% / 유지 ${mt(n)}% / 하락 ${dr(n)}% / 파괴 ${de(n)}%`;
+ $("#ui").innerHTML=max?"":`<span style="color:#4cd07a">성공 ${sr(n)}%</span> / <span style="color:#9aa6b6">유지 ${mt(n)}%</span> / <span style="color:#ffb454">하락 ${dr(n)}%</span> / <span style="color:#ff5a6e">파괴 ${de(n)}%</span>`;
  $("#up").disabled=max||me.gold<cost(n);$("#up").textContent=max?"최대 강화 달성!":`다음단계 +${n} 강화하기 (${fmt(cost(n))}G)`;
  $("#tr").textContent=me.tr||0;
  const cp=me.cp||{};
  $("#sh").innerHTML=SHOP.map(i=>`<div class="row"><span>${i.n}</span><button data-b="${i.id}" ${(me.tr||0)<i.c?"disabled":""}>🏆${i.c}</button></div>`).join("");
  $("#cp").innerHTML=SHOP.filter(i=>cp[i.id]>0).map(i=>`<div class="row"><span>${i.n} x${cp[i.id]}</span><button data-u="${i.id}">사용</button></div>`).join("")||'<span class="s">보유한 쿠폰이 없습니다</span>';
  const arr=Object.entries(users).sort((a,b)=>b[1].lv-a[1].lv||(b[1].wins||0)-(a[1].wins||0));
- $("#lb").innerHTML=arr.map(([id,u],i)=>`<div class="row"><span>${i+1}. ${esc(u.name)} <b class="g">+${u.lv}</b> <span class="s">${CARNAME[Math.min(u.lv,20)]}</span></span><span class="s">${fmt(u.gold)}G · ${u.wins||0}승 ${u.loss||0}패</span></div>`).join("");
+ $("#lb").innerHTML=arr.map(([id,u],i)=>`<div class="row"><span>${i+1}. ${esc(u.name)} <b class="g">+${u.lv}</b> <span class="s">${carName(u.lv)}</span></span><span class="s">${fmt(u.gold)}G · ${u.wins||0}승 ${u.loss||0}패</span></div>`).join("");
 }
 function feedRender(v){const a=Object.keys(v||{}).sort().reverse().slice(0,8);$("#fd").innerHTML=a.map(k=>`<div>${String(v[k]).replace(/<(?!\/?b>)/g,"&lt;")}</div>`).join("")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{fx.tick();document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));["farm","up","rank","shop"].forEach(k=>$("#t-"+k).hidden=k!=b.dataset.t)});
 
 // ---------- 파밍 ----------
+const TIERS=[
+ {n:"일반",p:65,lo:200,hi:20000,e:"📦",c:"#b0b7c3"},
+ {n:"희귀",p:24,lo:20001,hi:100000,e:"🔩",c:"#4aa3ff"},
+ {n:"영웅",p:8.5,lo:100001,hi:300000,e:"⚙️",c:"#b66bff"},
+ {n:"전설",p:2.2,lo:300001,hi:1000000,e:"🌟",c:"#ffa53a"},
+ {n:"신화",p:0.3,lo:1000001,hi:2000000,e:"👑",c:"#ff4d6d"}];
+$("#ftier").innerHTML=TIERS.map(t=>`<div class="tr"><b style="color:${t.c}">${t.e} ${t.n}</b><span class="s">${t.p}% · ${fmt(t.lo)} ~ ${fmt(t.hi)}G</span></div>`).join("");
 let cd=0;
 $("#farm").onclick=()=>{
  if(Date.now()<cd)return;cd=Date.now()+1000;fx.tick();
- const r=Math.random();let g,t;
- if(r<.03){g=300001+rand(1700000);t=3}else if(r<.2){g=20001+rand(280000);t=2}else{g=200+rand(19801);t=1}g=Math.round(g/10)*10;
- const b=$("#box");b.textContent="📦";b.className="shake";
- setTimeout(()=>{b.className="";b.textContent=["","🔩","⚙️","🌟"][t];
+ let r=Math.random()*100,acc=0,t=TIERS[0];
+ for(let i=TIERS.length-1;i>=0;i--){acc+=TIERS[i].p;if(r<acc){t=TIERS[i];break}}
+ const g=Math.round((t.lo+rand(t.hi-t.lo+1))/10)*10;
+ const b=$("#box");b.textContent="📦";b.className="shake";$("#fres").textContent="";
+ setTimeout(()=>{b.className="";b.textContent=t.e;
   me.gold+=g;save();render();
-  if(t==3){fx.jack();document.body.classList.add("flash");setTimeout(()=>document.body.classList.remove("flash"),900);toast("🌟 황금 모터 대박! +"+fmt(g)+"G");feed(`🌟 <b>${me.name}</b>님이 황금 모터를 발견! +${fmt(g)}G`)}
-  else if(t==2){fx.ok();toast("⚙️ 희귀 부품 발견! +"+fmt(g)+"G")}else toast("+"+fmt(g)+"G")},500);
+  $("#fres").innerHTML=`<span style="color:${t.c}">${t.e} ${t.n}</span> +${fmt(g)}G`;
+  const idx=TIERS.indexOf(t);
+  if(idx>=3){fx.jack();document.body.classList.add("flash");setTimeout(()=>document.body.classList.remove("flash"),900);toast(t.e+" "+t.n+" 발견! +"+fmt(g)+"G");feed(`${t.e} <b>${esc(me.name)}</b>님이 ${t.n} 등급을 발견! +${fmt(g)}G`)}
+  else if(idx>=1){fx.ok();toast(t.e+" "+t.n+" 발견! +"+fmt(g)+"G")}else toast("+"+fmt(g)+"G")},500);
  const tm=setInterval(()=>{const l=cd-Date.now();$("#farm").disabled=l>0;$("#farm").textContent=l>0?"쿨타임 "+(l/1000).toFixed(1)+"s":"파밍하기";if(l<=0)clearInterval(tm)},100);
 };
 
@@ -221,7 +258,7 @@ $("#up").onclick=()=>{
  const n=me.lv+1;if(n>MAXLV||me.gold<cost(n))return;
  me.gold-=cost(n);const r=Math.random()*100;
  if(r<sr(n)){me.lv=n;fx.ok();toast("✨ 강화 성공! +"+n);if(n>=15)feed(`🔥 <b>${me.name}</b>님이 +${n}강 달성!`)}
- else if(r>=100-de(n)){me.lv=0;fx.bad();toast("💥 파괴! +0강, 리어카로 돌아갑니다");feed(`💥 <b>${esc(me.name)}</b>님의 ${CARNAME[Math.min(n-1,20)]}이(가) +${n-1}강에서 파괴되어 리어카로 돌아갔습니다!`)}
+ else if(r>=100-de(n)){me.lv=0;fx.bad();toast("💥 파괴! +0강, 리어카로 돌아갑니다");feed(`💥 <b>${esc(me.name)}</b>님의 ${carName(n-1)}이(가) +${n-1}강에서 파괴되어 리어카로 돌아갔습니다!`)}
  else if(r>=100-de(n)-dr(n)){const t=dt(n);fx.bad();if(t<me.lv){me.lv=t;toast("⬇ 강화 하락… +"+t)}else toast("실패! 단계 유지 (하락 보호)")}
  else{fx.bad();toast("실패! 단계 유지")}
  save();render()};
