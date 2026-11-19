@@ -117,7 +117,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);if(p=="feedback")r=r.limitToLast(100);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-38";
+const APP_VERSION="2026-11-19-39";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -289,9 +289,9 @@ function render(){try{ftierRender()}catch(e){}
  const byBest=Object.entries(users).sort((a,b)=>bestP(b[1])-bestP(a[1])||(b[1].rb|0)-(a[1].rb|0));
  const board=(list,f)=>list.map(([id,u],i)=>`<div class="row"${id==uid?' style="background:#2b237040"':''}><span>${i+1}. ${esc(u.name)}</span><span>${f(u)}</span></div>`).join("");
  document.querySelectorAll("#lbtabs button").forEach(x=>x.classList.toggle("on",x.dataset.l==lbTab));
- $("#lb").innerHTML=lbTab=="best"?board(byBest,u=>{const m=bestB(u);return `<b class="g">최고 +${bestP(u)-2*m}${m?" ★"+m:""}</b>`})
+ $("#lb").innerHTML=lbTab=="best"?board(byBest,u=>{const m=bestB(u);const bl=bestP(u)-2*m;return `<b class="g">최고 +${bl}${m?" ★"+m:""}</b> <span class="s">${carName(bl)}</span>`})
   :lbTab=="win"?board(byWin,u=>{const n=(u.wins||0)+(u.loss||0);return n?`<b class="g">${Math.round(rate(u)*100)}%</b> <span class="s">${u.wins||0}승 ${u.loss||0}패</span>`:`<span class="s">전적 없음</span>`})
-  :board(arr,u=>`<b class="g">+${u.lv}${stars(u)}</b>`)
+  :board(arr,u=>`<b class="g">+${u.lv}${stars(u)}</b> <span class="s">${carName(u.lv)}</span>`)
 }
 function feedRender(v){const a=Object.keys(v||{}).sort().reverse().slice(0,8);$("#fd").innerHTML=a.map(k=>`<div>${String(v[k]).replace(/<(?!\/?b>)/g,"&lt;")}</div>`).join("")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{fx.tick();document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));["farm","up","rank","qna"].forEach(k=>$("#t-"+k).hidden=k!=b.dataset.t)});
