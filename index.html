@@ -18,7 +18,7 @@ button.on{background:var(--c);color:#06041a}
 button.big{width:100%;padding:16px;font-size:18px;background:linear-gradient(90deg,var(--m),#7a2cff);border:0;color:#fff;box-shadow:0 0 16px #ff2bd666}
 button:disabled{opacity:.45}
 .card{background:var(--p);border:1px solid #3a2f85;border-radius:12px;padding:12px;margin-bottom:10px}
-.lbg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.lbg h4{margin:0 0 4px;font-size:13px}.lbg .row{display:block;padding:5px 0;font-size:13px;line-height:1.35}.lbg .row .s{display:block;font-size:11px}
+#lbtabs button{flex:1;padding:8px 4px;font-size:13px;opacity:.55}#lbtabs button.on{opacity:1;background:#00e5ff;color:#06122b}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #2b2370}
 .row:last-child{border:0}
 .tr{display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid #2b2370;font-size:14px}
@@ -71,7 +71,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
   </div>
 </section>
 <section id="t-rank" class="card" hidden>
-  <button class="big" id="rnd" style="margin-bottom:10px">🎲 랜덤 경주 시작</button><div id="lb" class="lbg"></div>
+  <button class="big" id="rnd" style="margin-bottom:10px">🎲 랜덤 경주 시작</button><div id="lbtabs" style="display:flex;gap:6px;margin-bottom:8px"><button data-l="up" class="on">🏆 강화</button><button data-l="best">🥇 최고기록</button><button data-l="win">⚔️ 승률</button></div><div id="lb"></div>
   <p class="s">상대는 랜덤으로 정해집니다. 전투력(강화 단계 + 돌파 1회당 +2) 차이가 클수록 센 쪽이 유리하고, 약한 쪽도 최소 10% 확률로 이길 수 있습니다. (같으면 50:50)<br>• 차이 1 → 56% · 3 → 66% · 5 → 73% · 10 → 82% · 20 → 89%<br>• 승리 상금은 내 단계가 높을수록 많고, 나보다 강한 상대를 이기면 보너스(최대 ×2.5), 약한 상대를 이기면 감액(최소 ×0.5)됩니다. (경주 쿨타임 10초) 승리 시 트로피 +1.</p>
 </section>
 <section id="t-shop" class="card" hidden>
@@ -107,7 +107,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-27";
+const APP_VERSION="2026-11-19-28";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -249,7 +249,10 @@ function rbBox(){const n=rbn(me),c=me.rb|0;
  +row("비용","강화·돌파 -"+Math.round(3*n)+"% <span class=\"s\">(회당 -3%)</span>")
  +row("상금","경주 상금 +"+Math.round(5*n)+"% <span class=\"s\">(회당 +5%)</span>")}
 // ---------- 화면 ----------
+let lbTab='up';
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#lbtabs button');if(b){lbTab=b.dataset.l;render()}});
 function render(){try{ftierRender()}catch(e){}
+ if(me&&power(me)>(me.mx|0)){me.mx=power(me);me.mb=bts(me);try{save()}catch(e){}}
  if(!me)return;
  $("#nm").textContent=me.name;$("#gd").textContent=fmt(me.gold)+" G";
  $("#cv").innerHTML=car(me.lv);
@@ -271,8 +274,13 @@ function render(){try{ftierRender()}catch(e){}
  const arr=Object.entries(users).sort((a,b)=>power(b[1])-power(a[1])||(b[1].rb|0)-(a[1].rb|0)||(b[1].wins||0)-(a[1].wins||0));
  const rate=u=>{const n=(u.wins||0)+(u.loss||0);return n?(u.wins||0)/n:-1};
  const byWin=Object.entries(users).sort((a,b)=>rate(b[1])-rate(a[1])||(b[1].wins||0)-(a[1].wins||0));
- const col=(t,list,f)=>`<div><h4>${t}</h4>${list.map(([id,u],i)=>`<div class="row"${id==uid?' style="background:#2b237040"':''}><span>${i+1}. ${esc(u.name)} ${f(u)}</span></div>`).join("")}</div>`;
- $("#lb").innerHTML=col("🏆 강화 랭킹",arr,u=>`<b class="g">+${u.lv}${stars(u)}</b><span class="s">${fmt(u.gold)}G</span>`)+col("⚔️ 승률 랭킹",byWin,u=>{const n=(u.wins||0)+(u.loss||0);return n?`<b class="g">${Math.round(rate(u)*100)}%</b><span class="s">${u.wins||0}승 ${u.loss||0}패</span>`:`<span class="s">전적 없음</span>`})
+ const bestP=u=>Math.max(u.mx|0,power(u)),bestB=u=>(bestP(u)>(u.mx|0)?bts(u):(u.mb|0));
+ const byBest=Object.entries(users).sort((a,b)=>bestP(b[1])-bestP(a[1])||(b[1].rb|0)-(a[1].rb|0));
+ const board=(list,f)=>list.map(([id,u],i)=>`<div class="row"${id==uid?' style="background:#2b237040"':''}><span>${i+1}. ${esc(u.name)}</span><span>${f(u)}</span></div>`).join("");
+ document.querySelectorAll("#lbtabs button").forEach(x=>x.classList.toggle("on",x.dataset.l==lbTab));
+ $("#lb").innerHTML=lbTab=="best"?board(byBest,u=>{const m=bestB(u);return `<b class="g">최고 +${bestP(u)-2*m}${m?" ★"+m:""}</b>`})
+  :lbTab=="win"?board(byWin,u=>{const n=(u.wins||0)+(u.loss||0);return n?`<b class="g">${Math.round(rate(u)*100)}%</b> <span class="s">${u.wins||0}승 ${u.loss||0}패</span>`:`<span class="s">전적 없음</span>`})
+  :board(arr,u=>`<b class="g">+${u.lv}${stars(u)}</b> <span class="s">${carName(u.lv)}</span>`)
 }
 function feedRender(v){const a=Object.keys(v||{}).sort().reverse().slice(0,8);$("#fd").innerHTML=a.map(k=>`<div>${String(v[k]).replace(/<(?!\/?b>)/g,"&lt;")}</div>`).join("")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{fx.tick();document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));["farm","up","rank","shop"].forEach(k=>$("#t-"+k).hidden=k!=b.dataset.t)});
