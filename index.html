@@ -39,7 +39,7 @@ textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border
 .qc{padding:10px 0;border-bottom:1px solid #2b2370}.qc .h{display:flex;justify-content:space-between;font-size:12px;color:#9aa6b6;margin-bottom:4px}.qc .b{white-space:pre-wrap;word-break:break-word;line-height:1.5;font-size:14px}.qc button{padding:2px 8px;font-size:11px}
 input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);background:#0b0820;color:#fff;font-size:16px;margin:10px 0}
 .nt{width:120px;margin-left:-5px;font-size:11px;font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#cv img{width:240px!important;height:auto!important;margin:6px auto 0;image-rendering:pixelated;border-radius:0!important}
+#cv img{width:min(400px,100%)!important;height:auto!important;margin:6px auto 0;image-rendering:pixelated;border-radius:0!important}
 .lane{position:relative;height:96px;border-bottom:2px dashed #4b3fb0;margin:6px 0}
 .lane .c{position:absolute;left:0;width:130px;transform:translateX(0);transition:left 3s cubic-bezier(.4,0,.3,1)}
 .flash{animation:fl .8s}
@@ -51,7 +51,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
 <main>
 <div class="top"><span id="nm">-</span><span class="g" id="gd">0 G</span></div>
 <div id="stage"><div id="cv"></div><b id="lvt">+0</b> <span class="s" id="mode"></span></div>
-<div class="tabs"><button data-t="farm" class="on">파밍</button><button data-t="up">강화</button><button data-t="rank">레이스</button><button data-t="qna">💬 기능개선 문의</button></div>
+<div class="tabs"><button data-t="farm" class="on">파밍</button><button data-t="up">강화</button><button data-t="rank">레이스</button><button data-t="qna">💬 문의</button></div>
 
 <section id="t-farm" class="card">
   <div id="box">📦</div>
@@ -117,7 +117,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);if(p=="feedback")r=r.limitToLast(100);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-33";
+const APP_VERSION="2026-11-19-36";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -129,10 +129,9 @@ function feed(m){DB.set("feed/"+Date.now()+rand(99),m)}
 
 // ---------- 차량 SVG (체급별 일반 차종, 0~20강) ----------
 let _cid=0;
-const CARNAME=["리어카","경차","소형 해치백","준중형 세단","중형 세단","패스트백 세단","SUV","미니밴","프리미엄 세단","프리미엄 SUV","대형 세단","프리미엄 패스트백","고급 세단","플래그십 세단","스포츠 SUV","오프로더 SUV","럭셔리 세단","슈퍼카 I","슈퍼카 II","하이퍼카","챔피언 하이퍼카"];
-// 사용자가 cars/N.png 사진을 넣은 단계에서는 아래 이름이 표시됩니다.
+// 강화 단계별 차량 이름 (항상 이 이름만 표시)
 const CARNAME_USER=["리어카","모닝","밍스퍼","휴반떼","K5","윤전소카","쏘렌토","카니발","밍슬라","제네시스 GV70","아우디A6","BMW 520D","벤츠 E클래스","아우디A8","포르쉐 카이엔","지바겐","벤츠 마이바흐s","아벤타도르","우라칸","부가티","코닉세그"];
-const carName=lv=>{const k=Math.min(lv|0,20);return (IMGOK[k]===true||SIDEOK[k]===true)?CARNAME_USER[k]:CARNAME[k]};
+const carName=lv=>CARNAME_USER[Math.min(Math.max(lv|0,0),20)];
 function rp(P,R){const n=P.length;let d="";for(let i=0;i<n;i++){const p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n];const u=(a,b)=>{const x=a[0]-b[0],y=a[1]-b[1],l=Math.hypot(x,y)||1;return[x/l,y/l,l]};const v1=u(p0,p1),v2=u(p2,p1);const r=Math.min(R[i]||0,v1[2]/2,v2[2]/2);const a=[p1[0]+v1[0]*r,p1[1]+v1[1]*r],b=[p1[0]+v2[0]*r,p1[1]+v2[1]*r];d+=(i?"L":"M")+a[0].toFixed(1)+" "+a[1].toFixed(1)+"Q"+p1[0]+" "+p1[1]+" "+b[0].toFixed(1)+" "+b[1].toFixed(1)}return d+"Z"}
 const SH={
  hatch:{pts:[[66,118],[64,90],[70,70],[84,50],[170,50],[206,82],[234,90],[238,100],[236,118]],rad:[4,5,8,9,10,8,7,6,5],glass:[[76,80],[88,55],[166,55],[198,80]],wheels:[100,208],r:17,belt:80,doors:[132],pil:132,hl:[236,95],tl:[64,92],x0:64,x1:238,roof:50},
@@ -291,7 +290,7 @@ function render(){try{ftierRender()}catch(e){}
  document.querySelectorAll("#lbtabs button").forEach(x=>x.classList.toggle("on",x.dataset.l==lbTab));
  $("#lb").innerHTML=lbTab=="best"?board(byBest,u=>{const m=bestB(u);return `<b class="g">최고 +${bestP(u)-2*m}${m?" ★"+m:""}</b>`})
   :lbTab=="win"?board(byWin,u=>{const n=(u.wins||0)+(u.loss||0);return n?`<b class="g">${Math.round(rate(u)*100)}%</b> <span class="s">${u.wins||0}승 ${u.loss||0}패</span>`:`<span class="s">전적 없음</span>`})
-  :board(arr,u=>`<b class="g">+${u.lv}${stars(u)}</b> <span class="s">${carName(u.lv)}</span>`)
+  :board(arr,u=>`<b class="g">+${u.lv}${stars(u)}</b>`)
 }
 function feedRender(v){const a=Object.keys(v||{}).sort().reverse().slice(0,8);$("#fd").innerHTML=a.map(k=>`<div>${String(v[k]).replace(/<(?!\/?b>)/g,"&lt;")}</div>`).join("")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{fx.tick();document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));["farm","up","rank","qna"].forEach(k=>$("#t-"+k).hidden=k!=b.dataset.t)});
