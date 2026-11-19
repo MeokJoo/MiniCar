@@ -91,7 +91,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-12";
+const APP_VERSION="2026-11-19-13";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -249,7 +249,7 @@ function race(oid){
   else{fx.bad();$("#rs").innerHTML="패배… 다음엔 이길 거예요!";feed(`🏁 <b>${o.name}</b>님이 <b>${me.name}</b>님의 도전을 막아냈습니다!`)}
   render();$("#cl").disabled=false;$("#cl").textContent="닫기";$("#cl").onclick=()=>$("#ov").style.display="none"},3300)}
 
-// ---------- 새 버전 감시: Firebase config/version 값이 이 파일의 APP_VERSION과 다르면 새로고침 유도 ----------
+// ---------- 새 버전 감시: 사이트에 올라간 최신 index.html의 APP_VERSION이 내 버전과 다르면 새로고침 유도 ----------
 const SS={g:k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}},d:k=>{try{sessionStorage.removeItem(k)}catch(e){}}};
 let updShown=false;
 function checkVersion(v){
@@ -267,7 +267,9 @@ function checkVersion(v){
  if(DB==L&&!L.get("users"))[["데모봇A",3],["데모봇B",9],["데모봇C",15]].forEach(([n,l],i)=>L.set("users/bot"+i,{name:n,gold:5000*l,lv:l,wins:l,loss:2,tr:0}));
  let got;const gp=new Promise(r=>got=r);DB.sub("users",v=>{users=v||{};if(me&&users[uid])me=users[uid];render();got()});
  DB.sub("feed",feedRender);
- DB.sub("config/version",checkVersion);
+ const VER_RE=new RegExp("APP_VERSION"+'="([^"]+)"');
+ const pollVersion=async()=>{try{const r=await fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;const m=VER_RE.exec(await r.text());if(m)checkVersion(m[1])}catch(e){}};
+ setInterval(pollVersion,60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollVersion()});
  const start=name=>{uid=uid||"u"+Date.now().toString(36)+rand(1e4);localStorage.mcuid=uid;me=users[uid]||{name,gold:50000,lv:0,wins:0,loss:0,tr:0,ticket:0,cp:{}};save();$("#ov").style.display="none";render()};
  Promise.race([gp,new Promise(r=>setTimeout(r,4000))]).then(()=>{if(uid&&users[uid]){me=users[uid];if(me.ticket>0){me.gold+=3000*me.ticket;me.ticket=0;save();toast("하락 방지권이 폐지되어 골드로 환불되었습니다")}render()}else{$("#ov").style.display="flex";$("#ovc").innerHTML='<h3>🏎 닉네임을 입력하세요</h3><input id="ni" maxlength="10" placeholder="닉네임"><div id="er" class="s" style="color:#ff6b8a"></div><button class="big" id="ok">시작하기</button>';$("#ok").onclick=()=>{const v=$("#ni").value.trim();if(!v)return;if(Object.values(users).some(u=>(u.name||"").toLowerCase()==v.toLowerCase())){$("#er").textContent="이미 사용 중인 닉네임입니다. 다른 이름을 입력하세요.";return}start(v)}}});
 })();
