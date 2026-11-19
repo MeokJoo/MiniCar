@@ -50,7 +50,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
 <div id="upd" style="display:none;position:fixed;inset:0;background:#000d;align-items:center;justify-content:center;z-index:20;padding:16px"><div class="card" style="max-width:340px;text-align:center"><h3>🔄 새 버전이 나왔어요</h3><p>잠시 후 자동으로 새로고침됩니다.</p><button class="big" id="rl">지금 새로고침</button></div></div>
 <main>
 <div class="top"><span id="nm">-</span><span class="g" id="gd">0 G</span></div>
-<div id="stage"><div id="cv"></div><b id="lvt">+0</b> <span class="s" id="mode"></span></div>
+<div id="stage"><div id="cv"></div><b id="lvt">+0</b></div>
 <div class="tabs"><button data-t="farm" class="on">파밍</button><button data-t="up">강화</button><button data-t="rank">레이스</button><button data-t="qna">💬 문의</button></div>
 
 <section id="t-farm" class="card">
@@ -117,7 +117,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);if(p=="feedback")r=r.limitToLast(100);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-36";
+const APP_VERSION="2026-11-19-37";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -367,15 +367,14 @@ let qdata={},qlast=0;
 const mineIds=()=>{try{return JSON.parse(localStorage.mcq||"[]")}catch(e){return[]}};
 function qRender(){const ids=Object.keys(qdata||{}).filter(k=>qdata[k]&&qdata[k].t).sort((x,y)=>(qdata[x].ts||0)-(qdata[y].ts||0)),mine=mineIds();
  $("#qlist").innerHTML=ids.length?ids.slice().reverse().map(k=>{const n=ids.indexOf(k)+1,d=new Date(qdata[k].ts||+k.slice(0,13)||0);
-  return `<div class="qc"><div class="h"><span>익명 #${n} · ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span>${mine.includes(k)?`<button data-qd="${k}">삭제</button>`:""}</div><div class="b">${esc(qdata[k].t)}</div></div>`}).join(""):'<span class="s">아직 등록된 글이 없습니다. 첫 글을 남겨보세요!</span>'}
+  return `<div class="qc"><div class="h"><span>익명 #${n} · ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div><div class="b">${esc(qdata[k].t)}</div></div>`}).join(""):'<span class="s">아직 등록된 글이 없습니다. 첫 글을 남겨보세요!</span>'}
 $("#qtx").addEventListener("input",()=>$("#qcnt").textContent=$("#qtx").value.length+" / 1000");
-$("#qsend").onclick=()=>{const t=$("#qtx").value.trim();if(!t)return toast("내용을 입력하세요");if(!me)return;if(Date.now()-qlast<15000)return toast("잠시 후 다시 등록해 주세요");
- qlast=Date.now();const id=Date.now()+""+rand(1000);
+$("#qsend").onclick=()=>{const t=$("#qtx").value.trim();if(!t)return toast("내용을 입력하세요");if(!me)return;if(Date.now()-qlast<5000)return;
+ qlast=Date.now();$("#qsend").disabled=true;setTimeout(()=>$("#qsend").disabled=false,5000);const id=Date.now()+""+rand(1000);
  try{const m=mineIds();m.push(id);localStorage.mcq=JSON.stringify(m.slice(-50))}catch(e){}
  DB.set("feedbackMeta/"+id,{uid,name:me.name,ts:Date.now()});
  DB.set("feedback/"+id,{t:t.slice(0,1000),ts:Date.now()});
  $("#qtx").value="";$("#qcnt").textContent="0 / 1000";fx.ok();toast("등록되었습니다")};
-document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-qd]");if(!b)return;const id=b.dataset.qd;DB.set("feedback/"+id,null);DB.set("feedbackMeta/"+id,null);if(DB===L){delete L.d.feedback[id];delete (L.d.feedbackMeta||{})[id];localStorage.mcdb=JSON.stringify(L.d)}});
 
 // ---------- 상점 ----------
 document.addEventListener("click",e=>{
@@ -415,7 +414,6 @@ function checkVersion(v){
 // ---------- 시작 ----------
 (async()=>{
  if(firebaseConfig.apiKey){try{await ld("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");await ld("https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js");firebase.initializeApp(firebaseConfig);DB=F}catch(e){DB=L}}
- $("#mode").textContent=DB==F?"● 온라인":"● 데모 모드(내 기기에만 저장)";
  if(DB==L&&!L.get("users"))[["데모봇A",3],["데모봇B",9],["데모봇C",15]].forEach(([n,l],i)=>L.set("users/bot"+i,{name:n,gold:5000*l,lv:l,wins:l,loss:2,tr:0}));
  let got;const gp=new Promise(r=>got=r);DB.sub("users",v=>{users=v||{};if(me&&users[uid])me=users[uid];render();got()});
  DB.sub("feed",feedRender);DB.sub("feedback",v=>{qdata=v||{};qRender()});
