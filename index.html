@@ -18,6 +18,7 @@ button.on{background:var(--c);color:#06041a}
 button.big{width:100%;padding:16px;font-size:18px;background:linear-gradient(90deg,var(--m),#7a2cff);border:0;color:#fff;box-shadow:0 0 16px #ff2bd666}
 button:disabled{opacity:.45}
 .card{background:var(--p);border:1px solid #3a2f85;border-radius:12px;padding:12px;margin-bottom:10px}
+.lbg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.lbg h4{margin:0 0 4px;font-size:13px}.lbg .row{display:block;padding:5px 0;font-size:13px;line-height:1.35}.lbg .row .s{display:block;font-size:11px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #2b2370}
 .row:last-child{border:0}
 .tr{display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid #2b2370;font-size:14px}
@@ -48,7 +49,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
 <main>
 <div class="top"><span id="nm">-</span><span class="g" id="gd">0 G</span></div>
 <div id="stage"><div id="cv"></div><b id="lvt">+0</b> <span class="s" id="mode"></span></div>
-<div class="tabs"><button data-t="farm" class="on">파밍</button><button data-t="up">강화</button><button data-t="rank">레이스</button><button data-t="shop">상점</button></div>
+<div class="tabs"><button data-t="farm" class="on">파밍</button><button data-t="up">강화</button><button data-t="rank">레이스</button><button data-t="shop" disabled style="opacity:.4;cursor:not-allowed">상점 🔒</button></div>
 
 <section id="t-farm" class="card">
   <div id="box">📦</div>
@@ -70,7 +71,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
   </div>
 </section>
 <section id="t-rank" class="card" hidden>
-  <button class="big" id="rnd" style="margin-bottom:10px">🎲 랜덤 경주 시작</button><div id="lb"></div>
+  <button class="big" id="rnd" style="margin-bottom:10px">🎲 랜덤 경주 시작</button><div id="lb" class="lbg"></div>
   <p class="s">상대는 랜덤으로 정해집니다. 전투력(강화 단계 + 돌파 1회당 +2) 차이가 클수록 센 쪽이 유리하고, 약한 쪽도 최소 10% 확률로 이길 수 있습니다. (같으면 50:50)<br>• 차이 1 → 56% · 3 → 66% · 5 → 73% · 10 → 82% · 20 → 89%<br>• 승리 상금은 내 단계가 높을수록 많고, 나보다 강한 상대를 이기면 보너스(최대 ×2.5), 약한 상대를 이기면 감액(최소 ×0.5)됩니다. (경주 쿨타임 10초) 승리 시 트로피 +1.</p>
 </section>
 <section id="t-shop" class="card" hidden>
@@ -106,7 +107,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-26";
+const APP_VERSION="2026-11-19-27";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -268,7 +269,10 @@ function render(){try{ftierRender()}catch(e){}
  $("#sh").innerHTML=SHOP.map(i=>`<div class="row"><span>${i.n}</span><button data-b="${i.id}" ${(me.tr||0)<i.c?"disabled":""}>🏆${i.c}</button></div>`).join("");
  $("#cp").innerHTML=SHOP.filter(i=>cp[i.id]>0).map(i=>`<div class="row"><span>${i.n} x${cp[i.id]}</span><button data-u="${i.id}">사용</button></div>`).join("")||'<span class="s">보유한 쿠폰이 없습니다</span>';
  const arr=Object.entries(users).sort((a,b)=>power(b[1])-power(a[1])||(b[1].rb|0)-(a[1].rb|0)||(b[1].wins||0)-(a[1].wins||0));
- $("#lb").innerHTML=arr.map(([id,u],i)=>`<div class="row"><span>${i+1}. ${esc(u.name)} <b class="g">+${u.lv}${stars(u)}</b> <span class="s">${carName(u.lv)}</span></span><span class="s">${fmt(u.gold)}G · ${u.wins||0}승 ${u.loss||0}패</span></div>`).join("");
+ const rate=u=>{const n=(u.wins||0)+(u.loss||0);return n?(u.wins||0)/n:-1};
+ const byWin=Object.entries(users).sort((a,b)=>rate(b[1])-rate(a[1])||(b[1].wins||0)-(a[1].wins||0));
+ const col=(t,list,f)=>`<div><h4>${t}</h4>${list.map(([id,u],i)=>`<div class="row"${id==uid?' style="background:#2b237040"':''}><span>${i+1}. ${esc(u.name)} ${f(u)}</span></div>`).join("")}</div>`;
+ $("#lb").innerHTML=col("🏆 강화 랭킹",arr,u=>`<b class="g">+${u.lv}${stars(u)}</b><span class="s">${fmt(u.gold)}G</span>`)+col("⚔️ 승률 랭킹",byWin,u=>{const n=(u.wins||0)+(u.loss||0);return n?`<b class="g">${Math.round(rate(u)*100)}%</b><span class="s">${u.wins||0}승 ${u.loss||0}패</span>`:`<span class="s">전적 없음</span>`})
 }
 function feedRender(v){const a=Object.keys(v||{}).sort().reverse().slice(0,8);$("#fd").innerHTML=a.map(k=>`<div>${String(v[k]).replace(/<(?!\/?b>)/g,"&lt;")}</div>`).join("")}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{fx.tick();document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));["farm","up","rank","shop"].forEach(k=>$("#t-"+k).hidden=k!=b.dataset.t)});
