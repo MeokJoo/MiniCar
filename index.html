@@ -107,7 +107,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-28";
+const APP_VERSION="2026-11-19-29";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -382,6 +382,6 @@ function checkVersion(v){
  const pollVersion=async()=>{try{const r=await fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;const m=VER_RE.exec(await r.text());if(m)checkVersion(m[1])}catch(e){}};
  setInterval(pollVersion,60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollVersion()});
  const start=name=>{uid=uid||"u"+Date.now().toString(36)+rand(1e4);localStorage.mcuid=uid;me=users[uid]||{name,gold:50000,lv:0,bt:0,btf:0,rb:0,wins:0,loss:0,tr:0,ticket:0,cp:{}};save();$("#ov").style.display="none";render()};
- Promise.race([gp,new Promise(r=>setTimeout(r,4000))]).then(()=>{if(uid&&users[uid]){me=users[uid];if(me.ticket>0){me.gold+=3000*me.ticket;me.ticket=0;save();toast("하락 방지권이 폐지되어 골드로 환불되었습니다")}render()}else{$("#ov").style.display="flex";$("#ovc").innerHTML='<h3>🏎 닉네임을 입력하세요</h3><input id="ni" maxlength="10" placeholder="닉네임"><div id="er" class="s" style="color:#ff6b8a"></div><button class="big" id="ok">시작하기</button>';$("#ok").onclick=()=>{const v=$("#ni").value.trim();if(!v)return;if(Object.values(users).some(u=>(u.name||"").toLowerCase()==v.toLowerCase())){$("#er").textContent="이미 사용 중인 닉네임입니다. 다른 이름을 입력하세요.";return}start(v)}}});
+ Promise.race([gp,new Promise(r=>setTimeout(r,4000))]).then(()=>{if(uid&&users[uid]){me=users[uid];if(me.ticket>0){me.gold+=3000*me.ticket;me.ticket=0;save();toast("하락 방지권이 폐지되어 골드로 환불되었습니다")}render()}else{$("#ov").style.display="flex";$("#ovc").innerHTML='<h3>🏎 닉네임을 입력하세요</h3><input id="ni" maxlength="10" placeholder="닉네임"><div id="er" class="s" style="color:#ff6b8a"></div><button class="big" id="ok">시작하기</button>';$("#ok").onclick=()=>{const v=$("#ni").value.trim();if(!v)return;if(Object.values(users).some(u=>(u.name||"").toLowerCase()==v.toLowerCase())){const eid=Object.keys(users).find(k=>(users[k].name||"").toLowerCase()==v.toLowerCase());$("#er").innerHTML='이미 사용 중인 닉네임입니다. 다른 이름을 입력하거나,<br>내 계정이면 아래 버튼으로 이어서 하세요.<br><button id="claim" style="margin-top:6px;padding:8px 12px">🔑 "'+esc(users[eid].name)+'" 계정으로 이어하기</button>';$("#claim").onclick=()=>{uid=eid;localStorage.mcuid=uid;me=users[uid];$("#ov").style.display="none";render();toast("계정을 불러왔어요")};return}start(v)}}});
 })();
 </script></body></html>
