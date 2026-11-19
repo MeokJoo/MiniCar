@@ -117,11 +117,11 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);if(p=="feedback")r=r.limitToLast(100);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-37";
+const APP_VERSION="2026-11-19-38";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
-const MAXLV=20, COSTS=[28000,42000,70000,112000,168000,227000,297000,385000,454000,559000,664000,804000,979000,1154000,1363000,1608000,1643000,1818000,2028000,2272000,2540000,2830000,3140000,3470000,3820000,4190000,4580000,4990000,5420000,5870000];
+const MAXLV=20, COSTS=[2800,4200,7000,11200,16800,22700,29700,38500,45400,55900,66400,80400,97900,115400,136300,160800,164300,181800,202800,227200,254000,283000,314000,347000,382000,419000,458000,499000,542000,587000];
 const cost=n=>COSTS[n-1], sr=n=>[100,90,85,80,70,62,55,48,40,36,32,28,26,24,22,20,16,14,12,10,9,8,7,6,5,4,3,2,1.5,1][n-1], dr=n=>[0,0,0,0,2,3,4,5,3,4,5,6,2,3,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0][n-1], de=n=>[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2.5,5,7.5,10,12,14,16,18,20,22,24,26,28,30][n-1], dt=n=>[0,0,0,0,3,4,5,6,7,8,9,10,12,12,12,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0][n-1], mt=n=>Math.round((100-sr(n)-dr(n)-de(n))*10)/10;
 const SHOP=[{id:"coffee",n:"☕ 아메리카노 기프티콘권",c:5},{id:"chicken",n:"🍗 치킨 내기 면제권",c:12},{id:"snack",n:"🍪 간식 조공권",c:3}];
 function save(){DB.set("users/"+uid,me)}
@@ -231,13 +231,14 @@ function raceCar(lv){lv=lv|0;const k=Math.min(lv,20);
  return carSvg(lv,k>0?RC[k]:null)}
 
 // ---------- 돌파(20강 이후) ----------
-const BT=[{n:"타이어",e:"🛞",c:5000000,p:5},{n:"스티어링",e:"🎛️",c:6000000,p:4},{n:"엔진 증축",e:"🔧",c:7000000,p:3},{n:"터보 차저",e:"🌀",c:8000000,p:2.5},{n:"니트로",e:"🔥",c:9000000,p:2}];
+const BT=[{n:"타이어",e:"🛞",c:500000,p:5},{n:"스티어링",e:"🎛️",c:600000,p:4},{n:"엔진 증축",e:"🔧",c:700000,p:3},{n:"터보 차저",e:"🌀",c:800000,p:2.5},{n:"니트로",e:"🔥",c:900000,p:2}];
 const PITY=0.5,PITYMAX=10;                       // 실패할 때마다 성공확률 +0.5%p(최대 +10%p), 성공하면 초기화
 const bts=u=>Math.min(u.bt|0,BT.length);
 const power=u=>(u.lv|0)+2*bts(u);                // 경주 전투력: 강화 단계 + 돌파 1회당 +2
 const btRate=u=>{const b=BT[bts(u)];return b?Math.min(100,b.p+Math.min(PITYMAX,PITY*(u.btf|0))):0};
 const winP=d=>Math.min(.9,.5+.4*(1-Math.exp(-d/6))); // 전투력 차이 d일 때 센 쪽의 승률(최대 90%)
-const prizeBase=u=>bts(u)>0?Math.round(0.1*BT[Math.min(bts(u),BT.length-1)].c/100)*100:prizeOf(u.lv);
+const COST_DOWN=10; // 강화·돌파 비용을 1/10로 낮췄지만 경주 상금은 기존 금액 유지
+const prizeBase=u=>bts(u)>0?Math.round(0.1*BT[Math.min(bts(u),BT.length-1)].c*COST_DOWN/100)*100:prizeOf(u.lv);
 const prizeMul=d=>d>=0?Math.max(.5,1-.06*d):Math.min(2.5,1+.12*(-d)); // d=내 전투력-상대 전투력 (강한 상대를 이기면 보너스)
 const stars=u=>(bts(u)>0?" ★"+bts(u):"")+((u.rb|0)>0?" ♻️"+(u.rb|0):"");
 // ---------- 환생: 5돌파를 모두 마치면 +0강으로 돌아가는 대신 영구 보너스를 얻습니다 ----------
@@ -347,7 +348,7 @@ $("#up").onclick=()=>{
  save();render()};
 
 // ---------- 미니카 판매 ----------
-const SELL_MUL=50;
+const SELL_MUL=25;
 // 판매가 = (현재 강화의 강화비용) x 50. 돌파 상태면 마지막으로 성공한 돌파 비용 기준. 환생 할인은 적용하지 않음.
 const sellPrice=u=>bts(u)>0?BT[bts(u)-1].c*SELL_MUL:((u.lv|0)>=1?cost(Math.min(u.lv|0,MAXLV))*SELL_MUL:0);
 function sellRender(){if(!me)return;const pr=sellPrice(me);
@@ -384,7 +385,7 @@ document.addEventListener("click",e=>{
  if(b.dataset.r)race(b.dataset.r)});
 
 // ---------- 레이스 ----------
-let rcd=0;const prizeOf=lv=>Math.round(0.1*cost(Math.min(lv+1,MAXLV))/100)*100;
+let rcd=0;const prizeOf=lv=>Math.round(0.1*cost(Math.min(lv+1,MAXLV))*COST_DOWN/100)*100;
 $("#rnd").onclick=()=>{if(Date.now()<rcd)return toast("경주 쿨타임 "+Math.ceil((rcd-Date.now())/1000)+"초 남음");const ids=Object.keys(users).filter(k=>k!=uid);if(!ids.length)return toast("경주할 상대가 없어요");rcd=Date.now()+3000;race(ids[rand(ids.length)])};
 function race(oid){
  const o=users[oid];if(!o)return;
