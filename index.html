@@ -35,6 +35,8 @@ button:disabled{opacity:.45}
 #toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:#000c;border:1px solid var(--g);padding:10px 16px;border-radius:20px;font-weight:800;z-index:9;display:none;max-width:90%;text-align:center}
 #ov{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:8;padding:16px}
 #ov>div{background:var(--p);border:1px solid var(--m);border-radius:14px;padding:16px;width:100%;max-width:440px}
+textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid var(--c);background:#0b0820;color:#fff;font-size:16px;font-family:inherit;resize:vertical;margin:0 0 6px}
+.qc{padding:10px 0;border-bottom:1px solid #2b2370}.qc .h{display:flex;justify-content:space-between;font-size:12px;color:#9aa6b6;margin-bottom:4px}.qc .b{white-space:pre-wrap;word-break:break-word;line-height:1.5;font-size:14px}.qc button{padding:2px 8px;font-size:11px}
 input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);background:#0b0820;color:#fff;font-size:16px;margin:10px 0}
 .nt{width:120px;margin-left:-5px;font-size:11px;font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #cv img{width:240px!important;height:auto!important;margin:6px auto 0;image-rendering:pixelated;border-radius:0!important}
@@ -49,7 +51,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
 <main>
 <div class="top"><span id="nm">-</span><span class="g" id="gd">0 G</span></div>
 <div id="stage"><div id="cv"></div><b id="lvt">+0</b> <span class="s" id="mode"></span></div>
-<div class="tabs"><button data-t="farm" class="on">파밍</button><button data-t="up">강화</button><button data-t="rank">레이스</button><button data-t="shop" disabled style="opacity:.4;cursor:not-allowed">상점 🔒</button></div>
+<div class="tabs"><button data-t="farm" class="on">파밍</button><button data-t="up">강화</button><button data-t="rank">레이스</button><button data-t="qna">💬 기능개선 문의</button></div>
 
 <section id="t-farm" class="card">
   <div id="box">📦</div>
@@ -62,6 +64,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
   <button class="big" id="up">강화하기</button>
   <div id="ui" class="s" style="text-align:center;white-space:nowrap;font-size:12px;margin:10px 0 4px"></div>
   <div id="btbox"></div>
+  <div id="sellbox" style="margin-top:14px"></div>
   <div id="uinfo" style="margin-top:6px">
     <div class="ir"><b style="color:#4cd07a">성공</b><span>다음 단계로 올라갑니다.</span></div>
     <div class="ir"><b style="color:#9aa6b6">유지</b><span>단계는 그대로이고 골드만 사라집니다.</span></div>
@@ -72,7 +75,14 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--c);backg
 </section>
 <section id="t-rank" class="card" hidden>
   <button class="big" id="rnd" style="margin-bottom:10px">🎲 랜덤 경주 시작</button><div id="lbtabs" style="display:flex;gap:6px;margin-bottom:8px"><button data-l="up" class="on">🏆 강화</button><button data-l="best">🥇 최고기록</button><button data-l="win">⚔️ 승률</button></div><div id="lb"></div>
-  <p class="s">상대는 랜덤으로 정해집니다. 전투력(강화 단계 + 돌파 1회당 +2) 차이가 클수록 센 쪽이 유리하고, 약한 쪽도 최소 10% 확률로 이길 수 있습니다. (같으면 50:50)<br>• 차이 1 → 56% · 3 → 66% · 5 → 73% · 10 → 82% · 20 → 89%<br>• 승리 상금은 내 단계가 높을수록 많고, 나보다 강한 상대를 이기면 보너스(최대 ×2.5), 약한 상대를 이기면 감액(최소 ×0.5)됩니다. (경주 쿨타임 10초) 승리 시 트로피 +1.</p>
+  <p class="s">상대는 랜덤으로 정해집니다. 전투력(강화 단계 + 돌파 1회당 +2) 차이가 클수록 센 쪽이 유리하고, 약한 쪽도 최소 10% 확률로 이길 수 있습니다. (같으면 50:50)<br>• 차이 1 → 56% · 3 → 66% · 5 → 73% · 10 → 82% · 20 → 89%<br>• 승리 상금은 내 단계가 높을수록 많고, 나보다 강한 상대를 이기면 보너스(최대 ×2.5), 약한 상대를 이기면 감액(최소 ×0.5)됩니다. (경주 쿨타임 3초) 승리 시 트로피 +1.</p>
+</section>
+<section id="t-qna" class="card" hidden>
+  <h4 style="margin:0 0 6px">💬 기능개선 문의 / 건의</h4>
+  <p class="s" style="margin:0 0 8px;line-height:1.5">불편한 점, 추가됐으면 하는 기능, 버그를 자유롭게 남겨주세요. 글은 <b>익명</b>으로 표시됩니다.</p>
+  <textarea id="qtx" maxlength="1000" rows="5" placeholder="내용을 입력하세요 (최대 1000자)"></textarea>
+  <div style="display:flex;justify-content:space-between;align-items:center"><span class="s" id="qcnt">0 / 1000</span><button id="qsend" style="padding:8px 16px">등록</button></div>
+  <div id="qlist" style="margin-top:12px"></div>
 </section>
 <section id="t-shop" class="card" hidden>
   <div>🏆 트로피 <b id="tr">0</b></div><div id="sh"></div>
@@ -104,10 +114,10 @@ const L={d:JSON.parse(localStorage.mcdb||"{}"),cbs:[],get(p){return p.split("/")
  set(p,v){const k=p.split("/");let o=this.d;k.slice(0,-1).forEach(x=>o=o[x]=o[x]||{});o[k.at(-1)]=v;localStorage.mcdb=JSON.stringify(this.d);this.cbs.forEach(c=>c())},
  sub(p,cb){const f=()=>cb(this.get(p)??null);this.cbs.push(f);f()}};
 addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.forEach(c=>c())});
-const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);r.on("value",s=>cb(s.val()))}};
+const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);if(p=="feedback")r=r.limitToLast(100);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-30";
+const APP_VERSION="2026-11-19-33";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -267,6 +277,7 @@ function render(){try{ftierRender()}catch(e){}
   $("#up").disabled=me.gold<bcost(me,b);$("#up").textContent=`${bi+1}돌파 ${b.e} ${b.n} (${fmt(bcost(me,b))}G)`;
  }else{$("#ui").innerHTML=`<span style="color:#b66bff">모든 돌파 완료! 환생하면 +0강·돌파가 초기화되고 영구 보너스를 얻습니다.</span>`;$("#up").disabled=false;$("#up").textContent=Date.now()<rbArm?"정말 환생할까요? 한 번 더 누르세요":"♻️ 환생하기 ("+((me.rb|0)+1)+"회차)"}
  $("#btbox").innerHTML=`<div class="s" style="margin:12px 0 4px"><b>🚀 돌파</b> · +20강 달성 후 도전할 수 있습니다. 실패해도 단계는 안 내려가고, 실패가 쌓일수록 확률이 조금씩 올라갑니다.</div>`+BT.map((b,i)=>`<div class="ir"><b style="white-space:nowrap">${i+1}돌파</b><span>${i<bi?"✅":i==bi&&max?"▶":"🔒"} ${b.e} ${b.n} · ${fmt(b.c)}G · 성공 ${b.p}%</span></div>`).join("")+rbBox();
+ try{sellRender()}catch(e){}
  $("#tr").textContent=me.tr||0;
  const cp=me.cp||{};
  $("#sh").innerHTML=SHOP.map(i=>`<div class="row"><span>${i.n}</span><button data-b="${i.id}" ${(me.tr||0)<i.c?"disabled":""}>🏆${i.c}</button></div>`).join("");
@@ -283,7 +294,7 @@ function render(){try{ftierRender()}catch(e){}
   :board(arr,u=>`<b class="g">+${u.lv}${stars(u)}</b> <span class="s">${carName(u.lv)}</span>`)
 }
 function feedRender(v){const a=Object.keys(v||{}).sort().reverse().slice(0,8);$("#fd").innerHTML=a.map(k=>`<div>${String(v[k]).replace(/<(?!\/?b>)/g,"&lt;")}</div>`).join("")}
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{fx.tick();document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));["farm","up","rank","shop"].forEach(k=>$("#t-"+k).hidden=k!=b.dataset.t)});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{fx.tick();document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x==b));["farm","up","rank","qna"].forEach(k=>$("#t-"+k).hidden=k!=b.dataset.t)});
 
 // ---------- 파밍 ----------
 const TIERS=[
@@ -336,6 +347,37 @@ $("#up").onclick=()=>{
  else{fx.bad();toast("실패! 단계 유지")}
  save();render()};
 
+// ---------- 미니카 판매 ----------
+const SELL_MUL=50;
+// 판매가 = (현재 강화의 강화비용) x 50. 돌파 상태면 마지막으로 성공한 돌파 비용 기준. 환생 할인은 적용하지 않음.
+const sellPrice=u=>bts(u)>0?BT[bts(u)-1].c*SELL_MUL:((u.lv|0)>=1?cost(Math.min(u.lv|0,MAXLV))*SELL_MUL:0);
+function sellRender(){if(!me)return;const pr=sellPrice(me);
+ $("#sellbox").innerHTML=pr>0?`<button id="sellbtn" style="width:100%;padding:12px;background:#3a1530;border-color:#ff5a6e;color:#ffb3c0">🚗 미니카 판매 (+${fmt(pr)}G)</button>`:`<div class="s" style="text-align:center">+1강 이상이면 미니카를 판매할 수 있습니다.</div>`}
+document.addEventListener("click",e=>{
+ if(e.target.closest&&e.target.closest("#sellbtn")){const pr=sellPrice(me);if(pr<=0)return;
+  $("#ov").style.display="flex";
+  $("#ovc").innerHTML=`<h3>🚗 미니카 판매</h3><p style="line-height:1.6;margin:8px 0">현재 <b>+${me.lv}${stars(me)} ${carName(me.lv)}</b>을(를)<br><b style="color:#ffd84a;font-size:20px">${fmt(pr)}G</b> 에 판매하시겠습니까?</p><p class="s" style="color:#ff8a9c;margin:0 0 10px">판매하면 +0강(리어카)으로 돌아가고 강화·돌파 단계가 초기화됩니다. 되돌릴 수 없습니다.</p><div style="display:flex;gap:8px"><button class="big" id="sellno" style="flex:1;background:#2b2370">취소</button><button class="big" id="sellyes" style="flex:1;background:#ff3d5a">판매하기</button></div>`;return}
+ if(e.target.closest&&e.target.closest("#sellno")){$("#ov").style.display="none";return}
+ if(e.target.closest&&e.target.closest("#sellyes")){const pr=sellPrice(me);if(pr<=0){$("#ov").style.display="none";return}
+  const old="+"+me.lv+stars(me)+" "+carName(me.lv);
+  me.gold+=pr;me.lv=0;me.bt=0;me.btf=0;save();$("#ov").style.display="none";render();fx.jack();toast("🚗 판매 완료! +"+fmt(pr)+"G");feed(`🚗 <b>${esc(me.name)}</b>님이 ${esc(old)}을(를) ${fmt(pr)}G에 판매했습니다`)}
+});
+
+// ---------- 기능개선 문의 (화면엔 익명, 작성자는 feedbackMeta에 따로 저장) ----------
+let qdata={},qlast=0;
+const mineIds=()=>{try{return JSON.parse(localStorage.mcq||"[]")}catch(e){return[]}};
+function qRender(){const ids=Object.keys(qdata||{}).filter(k=>qdata[k]&&qdata[k].t).sort((x,y)=>(qdata[x].ts||0)-(qdata[y].ts||0)),mine=mineIds();
+ $("#qlist").innerHTML=ids.length?ids.slice().reverse().map(k=>{const n=ids.indexOf(k)+1,d=new Date(qdata[k].ts||+k.slice(0,13)||0);
+  return `<div class="qc"><div class="h"><span>익명 #${n} · ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span>${mine.includes(k)?`<button data-qd="${k}">삭제</button>`:""}</div><div class="b">${esc(qdata[k].t)}</div></div>`}).join(""):'<span class="s">아직 등록된 글이 없습니다. 첫 글을 남겨보세요!</span>'}
+$("#qtx").addEventListener("input",()=>$("#qcnt").textContent=$("#qtx").value.length+" / 1000");
+$("#qsend").onclick=()=>{const t=$("#qtx").value.trim();if(!t)return toast("내용을 입력하세요");if(!me)return;if(Date.now()-qlast<15000)return toast("잠시 후 다시 등록해 주세요");
+ qlast=Date.now();const id=Date.now()+""+rand(1000);
+ try{const m=mineIds();m.push(id);localStorage.mcq=JSON.stringify(m.slice(-50))}catch(e){}
+ DB.set("feedbackMeta/"+id,{uid,name:me.name,ts:Date.now()});
+ DB.set("feedback/"+id,{t:t.slice(0,1000),ts:Date.now()});
+ $("#qtx").value="";$("#qcnt").textContent="0 / 1000";fx.ok();toast("등록되었습니다")};
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-qd]");if(!b)return;const id=b.dataset.qd;DB.set("feedback/"+id,null);DB.set("feedbackMeta/"+id,null);if(DB===L){delete L.d.feedback[id];delete (L.d.feedbackMeta||{})[id];localStorage.mcdb=JSON.stringify(L.d)}});
+
 // ---------- 상점 ----------
 document.addEventListener("click",e=>{
  const b=e.target.closest("[data-b],[data-u],[data-r]");if(!b)return;
@@ -345,7 +387,7 @@ document.addEventListener("click",e=>{
 
 // ---------- 레이스 ----------
 let rcd=0;const prizeOf=lv=>Math.round(0.1*cost(Math.min(lv+1,MAXLV))/100)*100;
-$("#rnd").onclick=()=>{if(Date.now()<rcd)return toast("경주 쿨타임 "+Math.ceil((rcd-Date.now())/1000)+"초 남음");const ids=Object.keys(users).filter(k=>k!=uid);if(!ids.length)return toast("경주할 상대가 없어요");rcd=Date.now()+10000;race(ids[rand(ids.length)])};
+$("#rnd").onclick=()=>{if(Date.now()<rcd)return toast("경주 쿨타임 "+Math.ceil((rcd-Date.now())/1000)+"초 남음");const ids=Object.keys(users).filter(k=>k!=uid);if(!ids.length)return toast("경주할 상대가 없어요");rcd=Date.now()+3000;race(ids[rand(ids.length)])};
 function race(oid){
  const o=users[oid];if(!o)return;
  const d=power(me)-power(o);
@@ -377,7 +419,7 @@ function checkVersion(v){
  $("#mode").textContent=DB==F?"● 온라인":"● 데모 모드(내 기기에만 저장)";
  if(DB==L&&!L.get("users"))[["데모봇A",3],["데모봇B",9],["데모봇C",15]].forEach(([n,l],i)=>L.set("users/bot"+i,{name:n,gold:5000*l,lv:l,wins:l,loss:2,tr:0}));
  let got;const gp=new Promise(r=>got=r);DB.sub("users",v=>{users=v||{};if(me&&users[uid])me=users[uid];render();got()});
- DB.sub("feed",feedRender);
+ DB.sub("feed",feedRender);DB.sub("feedback",v=>{qdata=v||{};qRender()});
  const VER_RE=new RegExp("APP_VERSION"+'="([^"]+)"');
  const pollVersion=async()=>{try{const r=await fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;const m=VER_RE.exec(await r.text());if(m)checkVersion(m[1])}catch(e){}};
  setInterval(pollVersion,60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollVersion()});
