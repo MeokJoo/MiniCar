@@ -106,7 +106,7 @@ addEventListener("storage",()=>{L.d=JSON.parse(localStorage.mcdb||"{}");L.cbs.fo
 const F={set:(p,v)=>firebase.database().ref(p).set(v),sub(p,cb){let r=firebase.database().ref(p);if(p=="feed")r=r.limitToLast(10);r.on("value",s=>cb(s.val()))}};
 const ld=u=>new Promise((r,j)=>{const s=document.createElement("script");s.src=u;s.onload=r;s.onerror=j;document.head.append(s)});
 let DB=L,users={},me,uid=localStorage.mcuid;
-const APP_VERSION="2026-11-19-25";
+const APP_VERSION="2026-11-19-26";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 // ---------- 규칙 ----------
@@ -248,7 +248,7 @@ function rbBox(){const n=rbn(me),c=me.rb|0;
  +row("비용","강화·돌파 -"+Math.round(3*n)+"% <span class=\"s\">(회당 -3%)</span>")
  +row("상금","경주 상금 +"+Math.round(5*n)+"% <span class=\"s\">(회당 +5%)</span>")}
 // ---------- 화면 ----------
-function render(){
+function render(){try{ftierRender()}catch(e){}
  if(!me)return;
  $("#nm").textContent=me.name;$("#gd").textContent=fmt(me.gold)+" G";
  $("#cv").innerHTML=car(me.lv);
@@ -280,13 +280,20 @@ const TIERS=[
  {n:"영웅",p:8.5,lo:100001,hi:300000,e:"⚙️",c:"#b66bff"},
  {n:"전설",p:2.2,lo:300001,hi:1000000,e:"🌟",c:"#ffa53a"},
  {n:"신화",p:0.3,lo:1000001,hi:2000000,e:"👑",c:"#ff4d6d"}];
-$("#ftier").innerHTML=TIERS.map(t=>`<div class="tr"><b style="color:${t.c}">${t.e} ${t.n}</b><span class="s">${t.p}% · ${fmt(t.lo)} ~ ${fmt(t.hi)}G</span></div>`).join("");
+// 파밍 단계: 0=20강 전, 1=20강 달성, 돌파 1개당 +1, 환생 경험 시 +1 (최대 5)
+const FSTAGE=u=>Math.min(5,((u.lv|0)>=MAXLV?1:0)+bts(u)+((u.rb|0)>0?1:0));
+const FP=[[65,24,8.5,2.2,.3],[50,30,13,5.5,1.5],[45,31,15,7,2],[40,32,17,8.5,2.5],[35,33,19,10,3],[30,34,21,12,3]];
+const FG=[1,2,2.5,3,3.5,4];
+const fProb=u=>FP[FSTAGE(u)];
+const fGoldMul=u=>FG[FSTAGE(u)];
+function ftierRender(){const pr=fProb(me),m=fGoldMul(me),st=FSTAGE(me);
+ $("#ftier").innerHTML=(st>0?`<div class="s" style="margin-bottom:6px">🚀 파밍 ${st}단계 · 골드 ×${m} · 상위 등급 확률 상승</div>`:`<div class="s" style="margin-bottom:6px">20강을 달성하면 파밍 골드와 상위 등급 확률이 올라갑니다</div>`)+TIERS.map((t,i)=>`<div class="tr"><b style="color:${t.c}">${t.e} ${t.n}</b><span class="s">${pr[i]}% · ${fmt(Math.round(t.lo*m))} ~ ${fmt(Math.round(t.hi*m))}G</span></div>`).join("")}
 let cd=0;
 $("#farm").onclick=()=>{
  if(Date.now()<cd)return;cd=Date.now()+500;fx.tick();
- let r=Math.random()*100,acc=0,t=TIERS[0];
- for(let i=TIERS.length-1;i>=0;i--){acc+=TIERS[i].p;if(r<acc){t=TIERS[i];break}}
- const g=Math.round((t.lo+rand(t.hi-t.lo+1))*farmMul(me)/10)*10;
+ const pr=fProb(me);let r=Math.random()*100,acc=0,t=TIERS[0];
+ for(let i=TIERS.length-1;i>=0;i--){acc+=pr[i];if(r<acc){t=TIERS[i];break}}
+ const g=Math.round((t.lo+rand(t.hi-t.lo+1))*fGoldMul(me)*farmMul(me)/10)*10;
  const b=$("#box");b.textContent="📦";b.className="shake";$("#fres").textContent="";
  setTimeout(()=>{b.className="";b.textContent=t.e;
   me.gold+=g;save();render();
